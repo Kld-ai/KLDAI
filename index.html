@@ -86,6 +86,79 @@
           type: 'pie',
           data: { labels: labels, datasets: [{ data: data, backgroundColor: ['#26a69a', '#80cbc4'] }] },
           options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+
+
+          <script type="text/javascript">
+  window.addEventListener('DOMContentLoaded', (event) => {
+    let model, maxPredictions;
+    let chart;
+
+    console.log("🚀 جاري تحميل المكتبة:", typeof tmImage);
+
+    async function init() {
+      const modelURL = "model.json";
+      const metadataURL = "metadata.json";
+
+      try {
+        console.log("🚀 تحميل النموذج...");
+        model = await tmImage.load(modelURL, metadataURL);
+        console.log("✅ النموذج جاهز!");
+        maxPredictions = model.getTotalClasses();
+
+        confirmButton.disabled = false;
+      } catch (error) {
+        console.error("❌ فشل تحميل النموذج:", error);
+      }
+    }
+
+    const imageUpload = document.getElementById("imageUpload");
+    const preview = document.getElementById("preview");
+    const confirmButton = document.getElementById("confirmButton");
+    const labelContainer = document.getElementById("label-container");
+    const chartCanvas = document.getElementById('resultChart');
+    let imgLoaded = false;
+
+    imageUpload.addEventListener("change", (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      preview.src = window.URL.createObjectURL(file);
+      preview.style.display = "block";
+      imgLoaded = true;
+    });
+
+    confirmButton.addEventListener("click", async () => {
+      if (!imgLoaded) return;
+
+      const prediction = await model.predict(preview, false);
+      prediction.sort((a, b) => b.probability - a.probability);
+
+      labelContainer.innerHTML = "";
+      const labels = [];
+      const data = [];
+
+      prediction.forEach(pred => {
+        const button = document.createElement('div');
+        button.className = 'result-button';
+        button.innerText = `${pred.className}: ${(pred.probability * 100).toFixed(2)}%`;
+        labelContainer.appendChild(button);
+
+        labels.push(pred.className);
+        data.push((pred.probability * 100).toFixed(2));
+      });
+
+      if (chart) chart.destroy();
+      chart = new Chart(chartCanvas, {
+        type: 'pie',
+        data: { labels: labels, datasets: [{ data: data, backgroundColor: ['#26a69a', '#80cbc4'] }] },
+        options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+      });
+    });
+
+    init();
+  });
+</script>
+
         });
       });
 
