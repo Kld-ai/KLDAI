@@ -3,11 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>🚗 مصنف السيارات - SUV و SEDAN</title>
-
-  <!-- سكربت Teachable Machine -->
   <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8/dist/teachablemachine-image.min.js"></script>
-
-  <!-- سكربت الرسم البياني Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
@@ -33,15 +29,6 @@
       let model, maxPredictions;
       let chart;
 
-      async function init() {
-        const modelURL = "model.json";
-        const metadataURL = "metadata.json";
-
-        model = await tmImage.load(modelURL, metadataURL);
-        console.log("✅ النموذج جاهز!");
-        maxPredictions = model.getTotalClasses();
-      }
-
       const imageUpload = document.getElementById("imageUpload");
       const preview = document.getElementById("preview");
       const confirmButton = document.getElementById("confirmButton");
@@ -49,13 +36,28 @@
       const chartCanvas = document.getElementById('resultChart');
       let imgLoaded = false;
 
+      async function init() {
+        const modelURL = "model.json";
+        const metadataURL = "metadata.json";
+
+        try {
+          model = await tmImage.load(modelURL, metadataURL);
+          console.log("✅ النموذج جاهز!");
+          maxPredictions = model.getTotalClasses();
+          
+          // ✅ فعل الزر بعد تحميل النموذج
+          confirmButton.disabled = false;
+        } catch (error) {
+          console.error("❌ خطأ في تحميل النموذج:", error);
+        }
+      }
+
       imageUpload.addEventListener("change", (event) => {
         const file = event.target.files[0];
         if (!file) return;
 
         preview.src = window.URL.createObjectURL(file);
         preview.style.display = "block";
-        confirmButton.disabled = false;
         imgLoaded = true;
       });
 
